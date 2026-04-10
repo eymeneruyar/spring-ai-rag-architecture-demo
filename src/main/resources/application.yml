@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: rag-poc
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ragpoc
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.2        # Düşük temperature → daha tutarlı/gerçekçi yanıtlar
+      embedding:
+        options:
+          model: text-embedding-3-small
+
+    vectorstore:
+      pgvector:
+        index-type: HNSW           # Hızlı yaklaşık en-yakın komşu araması
+        distance-type: COSINE_DISTANCE
+        dimensions: 1536           # text-embedding-3-small boyutu
+        initialize-schema: true    # Uygulama açılışında tabloyu otomatik oluştur
+
+# RAG PoC özel konfigürasyonlar
+rag:
+  chunk:
+    size: 800         # Her chunk'taki max karakter sayısı
+    overlap: 100      # Chunk'lar arası örtüşme (bağlam sürekliliği için)
+  retrieval:
+    top-k: 10         # İlk aşamada kaç belge getirilsin
+    rerank-top-k: 3   # Reranking sonrası kaç belge LLM'e gönderilsin
+
+  guardrails:
+    # Bu konulardaki sorular reddedilir
+    blocked-topics:
+      - yatırım tavsiyesi
+      - investment advice
+      - hisse senedi al
+      - buy stock
+      - kripto
+      - crypto
+      - kişisel tıbbi tavsiye
+      - personal medical advice
+
+server:
+  port: 8080
